@@ -1,0 +1,114 @@
+[
+  {
+    "task_id": "t1",
+    "response": "Paris.",
+    "category": "FACTUAL",
+    "model": "accounts/fireworks/models/glm-5p2",
+    "usage": {
+      "prompt_tokens": 79,
+      "total_tokens": 183,
+      "completion_tokens": 104,
+      "prompt_tokens_details": {
+        "cached_tokens": 78
+      }
+    }
+  },
+  {
+    "task_id": "t2",
+    "response": "$36",
+    "category": "MATH",
+    "model": "accounts/fireworks/models/deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 94,
+      "total_tokens": 182,
+      "completion_tokens": 88,
+      "prompt_tokens_details": {
+        "cached_tokens": 93
+      }
+    }
+  },
+  {
+    "task_id": "t3",
+    "response": "Sentiment: Negative. The statement expresses strong dissatisfaction and a desire for a refund.",
+    "category": "SENTIMENT",
+    "model": "accounts/fireworks/models/deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 103,
+      "total_tokens": 208,
+      "completion_tokens": 105,
+      "prompt_tokens_details": {
+        "cached_tokens": 102
+      }
+    }
+  },
+  {
+    "task_id": "t4",
+    "response": "The quick brown fox jumps over the lazy dog, highlighting the contrast between loyal dogs and cunning foxes.",
+    "category": "SUMMARIZATION",
+    "model": "accounts/fireworks/models/deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 89,
+      "total_tokens": 265,
+      "completion_tokens": 176,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  {
+    "task_id": "t5",
+    "response": "{\n  \"person\": [\"Elon Musk\"],\n  \"organization\": [\"Tesla\"],\n  \"location\": [\"Paris\"],\n  \"date\": [\"last Tuesday\"]\n}",
+    "category": "NER",
+    "model": "accounts/fireworks/models/glm-5p2",
+    "usage": {
+      "prompt_tokens": 110,
+      "total_tokens": 441,
+      "completion_tokens": 331,
+      "prompt_tokens_details": {
+        "cached_tokens": 64
+      }
+    }
+  },
+  {
+    "task_id": "t6",
+    "response": "```python\ndef fibonacci(n: int) -> int:\n    \"\"\"\n    Return the nth Fibonacci number (0-indexed).\n    F(0) = 0, F(1) = 1, F(n) = F(n-1) + F(n-2) for n >= 2.\n    \"\"\"\n    if n < 0:\n        raise ValueError(\"n must be a non-negative integer\")\n    if n == 0:\n        return 0\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n```",
+    "category": "CODE_GEN",
+    "model": "accounts/fireworks/models/deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 80,
+      "total_tokens": 287,
+      "completion_tokens": 207,
+      "prompt_tokens_details": {
+        "cached_tokens": 79
+      }
+    }
+  },
+  {
+    "task_id": "t7",
+    "response": "The function subtracts instead of adding.\n\n```python\ndef add(a, b):\n    return a + b\n```",
+    "category": "CODE_DEBUG",
+    "model": "accounts/fireworks/models/deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 99,
+      "total_tokens": 192,
+      "completion_tokens": 93,
+      "prompt_tokens_details": {
+        "cached_tokens": 98
+      }
+    }
+  },
+  {
+    "task_id": "t8",
+    "response": "Alice likes blue, Bob likes red, Carol likes green.",
+    "category": "LOGIC",
+    "model": "accounts/fireworks/models/deepseek-v4-pro",
+    "usage": {
+      "prompt_tokens": 111,
+      "total_tokens": 241,
+      "completion_tokens": 130,
+      "prompt_tokens_details": {
+        "cached_tokens": 110
+      }
+    }
+  }
+]

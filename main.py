@@ -10,8 +10,8 @@ import requests
 INPUT_PATH  = os.environ.get("TASKS_INPUT_PATH", "/input/tasks.json")
 OUTPUT_PATH = os.environ.get("RESULTS_OUTPUT_PATH", "/output/results.json")
 REQUEST_TIMEOUT     = 28
-MAX_ATTEMPTS        = 2
-MAX_WORKERS         = 8
+MAX_ATTEMPTS        = 4
+MAX_WORKERS         = 4
 GLOBAL_DEADLINE     = 9 * 60   # 9 minutes; scoring system has 10-min limit
 FIREWORKS_PREFIX    = "accounts/fireworks/models/"
 
@@ -48,10 +48,57 @@ _KW = {
     "SUMMARIZATION":["summarize","summarise","summary","condense","tl;dr","shorten the following","in one sentence","in a single sentence"],
     "CODE_DEBUG":   ["bug","debug","fix the following code","fix this code","traceback","stack trace","doesn't work","does not work","not working","throws an error","raises an error","correct the code","find the error","what's wrong with this code"],
     "CODE_GEN":     ["write a function","write a python","write a javascript","implement a function","write code","write a program","function that","write an algorithm","write a class","implement the following"],
-    "LOGIC":        ["puzzle","each of the following","exactly one of","must be true","who is the","which one is","satisfy all","constraints below","logic grid","if and only if","mutually exclusive"],
+    "LOGIC":        ["puzzle","each of the following","exactly one of","exactly one color","must be true","who is the","which one is","satisfy all","constraints below","logic grid","if and only if","mutually exclusive","likes exactly","each person","each of them"],
     "MATH":         ["percent","%","how many","calculate","total cost","average","sum of","profit","interest rate","ratio of","how much","projection","compound","discount"],
 }
 _CODE_FENCE = re.compile(r"```")
+
+_REASONING_PREAMBLE = re.compile(
+    r"^(\s*\d+\.\s+\*\*[^\n]+\*\*\n[\s\S]*?)\n(?=(?:Sentiment:|{\s*\"|The |[A-Z]))",
+    re.MULTILINE
+)
+
+def _strip_reasoning(text: str, cat: str) -> str:
+    """Remove verbose reasoning preambles that some models emit before the actual answer."""
+    lines = text.strip().splitlines()
+    preamble_markers = {"**analyze", "**step", "**classification", "**final answer", "**identify",
+                        "**solution", "**draft", "**format", "**consider", "**conclusion"}
+
+    # For categories with simple expected outputs, look for the answer pattern at the end
+    if cat == "SENTIMENT":
+        for line in reversed(lines):
+            if line.strip().lower().startswith("sentiment:"):
+                return line.strip()
+        # Try finding anywhere
+        for line in lines:
+            if line.strip().lower().startswith("sentiment:"):
+                return line.strip()
+
+    if cat == "SUMMARIZATION":
+        # Find last non-empty non-preamble line
+        for line in reversed(lines):
+            s = line.strip()
+            if s and not any(m in s.lower() for m in preamble_markers) and not s.startswith("*") and not re.match(r"^\d+\.", s):
+                return s
+
+    # General: strip preamble lines and return remaining
+    clean = []
+    in_preamble = False
+    for i, line in enumerate(lines):
+        lower = line.lower().strip()
+        if any(m in lower for m in preamble_markers):
+            in_preamble = True
+            continue
+        if in_preamble:
+            # End preamble when we see a non-indented, non-bulleted substantive line
+            if line and not line.startswith("    ") and not line.startswith("*") and not line.startswith("-") and not re.match(r"^\s*\d+\.", line):
+                in_preamble = False
+                clean.append(line)
+            continue
+        clean.append(line)
+
+    result = "\n".join(clean).strip()
+    return result if result else text.strip()
 
 def classify(prompt: str) -> str:
     text = prompt.lower()
@@ -103,8 +150,8 @@ class Router:
             "CODE_GEN":     dedup([coder,strong,fast]+models),
             "MATH":         dedup([strong,coder,fast]+models),
             "LOGIC":        dedup([strong,coder,fast]+models),
+            "SUMMARIZATION":dedup([strong,fast,coder]+models),
             "SENTIMENT":    dedup([fast,strong,coder]+models),
-            "SUMMARIZATION":dedup([fast,strong,coder]+models),
             "NER":          dedup([fast,strong,coder]+models),
             "FACTUAL":      dedup([fast,strong,coder]+models),
         }
@@ -135,6 +182,8 @@ class Router:
                             with self._lock:
                                 self._ok[rid] = False
                             break
+                        if "429" in str(e) or "rate" in str(e).lower():
+                            time.sleep(2 ** attempt)   # 1s, 2s backoff
                         if attempt < MAX_ATTEMPTS - 1:
                             time.sleep(0.5)
         raise RuntimeError(f"All models failed for category {cat}")
@@ -180,6 +229,8 @@ class Router:
 
         data = r.json()
         content = data["choices"][0]["message"]["content"]
+        # Strip GLM reasoning preamble if present (lines starting with **Analyze**, numbered steps etc.)
+        content = _strip_reasoning(content, cat)
         usage   = data.get("usage", {})
         log(f"  [{cat}] model={model_id} tokens={usage.get('total_tokens','?')}")
         return {"content": content, "usage": usage, "model": model_id}

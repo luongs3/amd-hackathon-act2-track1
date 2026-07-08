@@ -1,0 +1,10 @@
+[
+  {"task_id": "t1", "prompt": "What is the capital of France?"},
+  {"task_id": "t2", "prompt": "Calculate: if a product costs $45 and has a 20% discount, what is the final price?"},
+  {"task_id": "t3", "prompt": "Classify the sentiment: 'This product is absolutely terrible. I want my money back.'"},
+  {"task_id": "t4", "prompt": "Summarize in one sentence: The quick brown fox jumps over the lazy dog. Dogs are loyal animals. Foxes are cunning."},
+  {"task_id": "t5", "prompt": "Extract named entities: 'Elon Musk visited Paris last Tuesday with a team from Tesla.'"},
+  {"task_id": "t6", "prompt": "Write a function that returns the nth fibonacci number."},
+  {"task_id": "t7", "prompt": "Fix this code:\n```python\ndef add(a, b):\n    return a - b\n```"},
+  {"task_id": "t8", "prompt": "Three people (Alice, Bob, Carol) each like exactly one color: red, blue, green. Alice does not like red. Bob does not like blue. Carol likes green. Who likes what?"}
+]
